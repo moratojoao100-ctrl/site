@@ -9,6 +9,51 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;900&family=Karla:wght@400;500;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  .ticket__controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .qty-stepper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fdf1e0;
+    border-radius: 999px;
+    padding: 4px;
+  }
+  .qty-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: #ff7a3d;
+    color: #fff;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease, background 0.2s ease;
+  }
+  .qty-btn:hover {
+    background: #e85f22;
+  }
+  .qty-btn:active {
+    transform: scale(0.9);
+  }
+  .qty-value {
+    min-width: 20px;
+    text-align: center;
+    font-family: 'Karla', sans-serif;
+    font-weight: 700;
+    color: #4a2c14;
+  }
+</style>
 </head>
 <body>
 <header class="hero">
@@ -36,7 +81,14 @@
           <p>Coxinha clássica, crocante e recheada até a última mordida.</p>
           <div class="ticket__footer">
             <span class="ticket__price">R$ 1,00</span>
-            <button type="button" class="ticket__button add-to-cart">Adicionar ao carrinho</button>
+            <div class="ticket__controls">
+              <div class="qty-stepper">
+                <button type="button" class="qty-btn qty-minus" aria-label="Diminuir quantidade">−</button>
+                <span class="qty-value">1</span>
+                <button type="button" class="qty-btn qty-plus" aria-label="Aumentar quantidade">+</button>
+              </div>
+              <button type="button" class="ticket__button add-to-cart">Adicionar ao carrinho</button>
+            </div>
           </div>
         </div>
       </article>
@@ -50,7 +102,14 @@
           <p>Enroladinho crocante com recheio saboroso de salsicha.</p>
           <div class="ticket__footer">
             <span class="ticket__price">R$ 1,00</span>
-            <button type="button" class="ticket__button add-to-cart">Adicionar ao carrinho</button>
+            <div class="ticket__controls">
+              <div class="qty-stepper">
+                <button type="button" class="qty-btn qty-minus" aria-label="Diminuir quantidade">−</button>
+                <span class="qty-value">1</span>
+                <button type="button" class="qty-btn qty-plus" aria-label="Aumentar quantidade">+</button>
+              </div>
+              <button type="button" class="ticket__button add-to-cart">Adicionar ao carrinho</button>
+            </div>
           </div>
         </div>
       </article>
@@ -64,7 +123,14 @@
           <p>Risolis quentinho com recheio suculento de carne temperada.</p>
           <div class="ticket__footer">
             <span class="ticket__price">R$ 1,00</span>
-            <button type="button" class="ticket__button add-to-cart">Adicionar ao carrinho</button>
+            <div class="ticket__controls">
+              <div class="qty-stepper">
+                <button type="button" class="qty-btn qty-minus" aria-label="Diminuir quantidade">−</button>
+                <span class="qty-value">1</span>
+                <button type="button" class="qty-btn qty-plus" aria-label="Aumentar quantidade">+</button>
+              </div>
+              <button type="button" class="ticket__button add-to-cart">Adicionar ao carrinho</button>
+            </div>
           </div>
         </div>
       </article>
@@ -78,7 +144,14 @@
           <p>Croquete recheado com queijo derretido e presunto saboroso.</p>
           <div class="ticket__footer">
             <span class="ticket__price">R$ 1,00</span>
-            <button type="button" class="ticket__button add-to-cart">Adicionar ao carrinho</button>
+            <div class="ticket__controls">
+              <div class="qty-stepper">
+                <button type="button" class="qty-btn qty-minus" aria-label="Diminuir quantidade">−</button>
+                <span class="qty-value">1</span>
+                <button type="button" class="qty-btn qty-plus" aria-label="Aumentar quantidade">+</button>
+              </div>
+              <button type="button" class="ticket__button add-to-cart">Adicionar ao carrinho</button>
+            </div>
           </div>
         </div>
       </article>
@@ -198,12 +271,49 @@
     cartDrawer.setAttribute('aria-hidden', 'true');
   }
 
+  function getSelectedQty(ticket) {
+    return parseInt(ticket.querySelector('.qty-value').textContent, 10) || 1;
+  }
+
+  function setSelectedQty(ticket, value) {
+    ticket.querySelector('.qty-value').textContent = value;
+  }
+
+  document.querySelectorAll('.qty-plus').forEach(button => {
+    button.addEventListener('click', event => {
+      const ticket = event.target.closest('.ticket');
+      const current = getSelectedQty(ticket);
+      setSelectedQty(ticket, current + 1);
+    });
+  });
+
+  document.querySelectorAll('.qty-minus').forEach(button => {
+    button.addEventListener('click', event => {
+      const ticket = event.target.closest('.ticket');
+      const current = getSelectedQty(ticket);
+      if (current > 1) {
+        setSelectedQty(ticket, current - 1);
+      }
+    });
+  });
+
   document.querySelectorAll('.add-to-cart').forEach(button => {
     button.addEventListener('click', event => {
       const ticket = event.target.closest('.ticket');
       const name = ticket.querySelector('h3').textContent.trim();
       const price = parseFloat(ticket.dataset.price);
-      addItemToCart(name, price);
+      const qty = getSelectedQty(ticket);
+
+      const existing = cart.find(item => item.name === name);
+      if (existing) {
+        existing.quantity += qty;
+      } else {
+        cart.push({ name, price, quantity: qty });
+      }
+
+      updateCart();
+      openCart();
+      setSelectedQty(ticket, 1);
     });
   });
 
